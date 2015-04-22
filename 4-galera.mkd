@@ -1,0 +1,242 @@
+Title: Galera and puppetlabs mysql module
+Date: 2012-11-28 10:49
+Category: Puppet
+Tags: puppetlabs, mysql, galera
+
+Recently I have tested mysql galera on debian, here a quick description of the installation of galera with the [puppetlabs-mysql](https://github.com/puppetlabs/puppetlabs-mysql)
+This will allow to use galera for all applications that setup mysql with this module.
+
+
+Start by add the percona repository of mysql galera
+
+    class mygalera_klass{
+
+    $local_ip = $ipaddress_eth0
+
+    # apt repository
+    apt::source { "galera_percona_repo":
+        location          => "http://repo.percona.com/apt/"
+        release           => "squeeze",
+        repos             => "percona",
+        key               => "CD2EFD2A"
+        include_src       => false,
+    }
+
+<br />
+We define what is the initial galera node and what are the other nodes in the galera ring:
+
+    $galera_nextserver = {
+        "galera1.lan" => "",  # replace the empty string by $ipaddress_galera3 when all nodes are correclty setup
+        "galera2.lan" => "$ipaddress_galera1",
+        "galera3.lan" => "$ipaddress_galera2",
+    }
+    $galera_master = "galera1.lan"
+
+Note: _This part can be sexiest if puppetdb is used_
+
+<br />
+Setup the mysql server class, it allow to change the package name of the mysql database
+    
+    # mysql definifition
+    class { 'mysql::server':
+      package_name => "percona-xtradb-cluster-server-5.5",
+      config_hash => {
+        bind_address  => $local_ip,
+        root_password => "myrootpassword"
+      },
+      require => Apt::Source["galera_percona_repo"]
+    }
+
+Ensure some mandatory packages for galera are installed
+
+    package{["xinetd",
+            "percona-xtradb-cluster-galera-2.x",
+            "percona-xtradb-cluster-client-5.5",
+            "percona-xtrabackup"] :
+      ensure => latest,
+      require => Apt::Source["galera_percona_repo"]
+    }
+
+<br />
+If the node is the initial master node, we create one user for the clustercheck user used by some percona script for load balancing purpose, and a other one the debian-sys-maint user to make the debian script happy
+
+    
+    if $fqdn == $galera_master {
+        database_user { "clustercheckuser@localhost":
+          ensure => "present",
+          password_hash => mysql_password("clustercheckpassword!"), # can not change password in clustercheck script
+          provider      => 'mysql',
+          require => File["/root/.my.cnf"] # why this is require ?
+        }
+        database_user { "debian-sys-maint@localhost":
+          ensure => "present",
+          password_hash => mysql_password("debiansysmaint_password!"),
+          provider  => "mysql",
+          require => File["/root/.my.cnf"] # why this is require ?
+        }
+    }
+    
+
+<br />
+The debian-sys-maint password should be the same on all nodes, so update it in debian cnf files
+
+    # set the same debian_sys_maint password
+    exec{"set-mysql-debian-sys-miant-pass":
+        command => "/bin/sed -i 's/^password.*/password = debiansysmaint_password!/g' /etc/mysql/debian.cnf",
+        unless => "/bin/grep -qFx 'password = debiansysmaint_password!' /etc/mysql/debian.cnf",
+        require => Package["mysql-server"]
+    }
+
+<br />
+Next, configure the http service of percona package to monitor the cluster health (useful for load balancers and nagios)
+
+    service{"xinetd": hasstatus => false }
+    exec{"add-mysqlchk-in-etc-services":
+        command => "/bin/echo mysqlchk 9200/tcp >> /etc/services",
+        unless => "/bin/grep -qFx 'mysqlchk 9200/tcp' /etc/services",
+        notify => Service["xinetd"],
+    }
+    # fix the broken link provided by the percona package
+    file{"/usr/local/bin/clustercheck":
+        ensure => "link",
+        target => "/usr/bin/clustercheck",
+    }
+    
+Note: _percona provide a simple script to control the health of the cluster_ <br />
+_The output of the script look like this and it is used with a percona xinetd (/etc/xinetd.d/mysqlchk) to provide the cluster status via the HTTP protocol_
+
+    # /usr/bin/clustercheck 
+    HTTP/1.1 200 OK
+    Content-Type: text/plain
+
+    Percona XtraDB Cluster Node is synced.
+
+
+
+<br />
+And to finish the mysql configuration for galera:
+
+    # for galera
+    mysql::server::config{"galera_config":
+        settings => inline_template('
+    [mysqld]
+    # mandatory for galera
+    binlog_format=ROW
+    innodb_autoinc_lock_mode=2
+    innodb_locks_unsafe_for_binlog=1
+    # galera configuration
+    wsrep_provider=/usr/lib/libgalera_smm.so
+    wsrep_cluster_name="galera_cluster"
+    wsrep_cluster_address="gcomm://<%= galera_nextserver[fqdn] %>"
+    wsrep_sst_auth=root:mymysqlrootpassword %>
+    wsrep_certify_nonPK=1
+    wsrep_convert_LOCK_to_trx=0
+    wsrep_auto_increment_control=1
+    wsrep_drupal_282555_workaround=0
+    wsrep_causal_reads=0
+    wsrep_sst_method=xtrabackup
+    wsrep_node_address="<%= local_ip %>"
+    wsrep_node_incoming_address="<%= local_ip %>"
+
+    # this value here are used by /usr/bin/innobackupex
+    # and wsrep_sst_xtrabackup take only one configuration file and use the last one
+    # (/etc/mysql/my.cnf is not used)
+    datadir = /var/lib/mysql
+    tmpdir = /tmp
+    #innodb_flush_method             = O_DIRECT
+    #innodb_log_buffer_size          = 32M
+    #innodb_log_file_size            = 256M
+    #innodb_log_files_in_group       = 2
+    #innodb_data_file_path
+    #innodb_data_home_dir
+    #innodb_fast_checksum
+    #innodb_log_block_size
+    #innodb_log_group_home_dir
+    #innodb_page_size
+    '),
+        }
+
+    }
+
+Note: _the user in "wsrep_sst_auth" should be allowed to replicate the whole database, here root, it seems safe because only the connection on localhost is used by galera_
+
+
+Some snippet of code for the load balancer if [puppetlabs-haproxy](https://github.com/puppetlabs/puppetlabs-haproxy) module is used:
+
+    # On a galera node:
+    @@haproxy::balancermember{$fqdn:
+        listening_service => "galera_cluster",
+        server_names      => $::hostname,
+        ipaddresses       => $local_ip,
+        ports             => '3306',
+        options           => inline_template("check inter 2000 rise 2 fall 5 port 9200 <% if @hostname != @galera_master -%>backup<% end %>")
+    }
+
+    # On a haproxy node:
+    haproxy::listen { 'galera_cluster':
+        ipaddress => $haproxy_local_net_ip,
+        ports     => 3306,
+        options   => {
+            'mode' => 'tcp',
+            'balance' => 'roundrobin',
+            'option' => ["tcpka", "tcplog", "httpchk"],
+         }
+    }
+
+#### Some check
+
+after applied the puppet configuration, the status of the galera can be checked with:
+
+    # mysql mysql -e 'show status'  | grep wsrep
+    wsrep_local_state_uuid  c3271751-4091-11e2-0800-8f9f852b5de4
+    wsrep_protocol_version  4
+    wsrep_last_committed    1159
+    wsrep_replicated    0
+    wsrep_replicated_bytes  0
+    wsrep_received  7
+    wsrep_received_bytes    995
+    wsrep_local_commits 0
+    wsrep_local_cert_failures   0
+    wsrep_local_bf_aborts   0
+    wsrep_local_replays 0
+    wsrep_local_send_queue  0
+    wsrep_local_send_queue_avg  0.000000
+    wsrep_local_recv_queue  0
+    wsrep_local_recv_queue_avg  0.000000
+    wsrep_flow_control_paused   0.000000
+    wsrep_flow_control_sent 0
+    wsrep_flow_control_recv 0
+    wsrep_cert_deps_distance    0.000000
+    wsrep_apply_oooe    0.000000
+    wsrep_apply_oool    0.000000
+    wsrep_apply_window  0.000000
+    wsrep_commit_oooe   0.000000
+    wsrep_commit_oool   0.000000
+    wsrep_commit_window 0.000000
+    wsrep_local_state   4
+    wsrep_local_state_comment   Synced (6)
+    wsrep_cert_index_size   0
+    wsrep_causal_reads  0
+    wsrep_cluster_conf_id   4
+    wsrep_cluster_size  3
+    wsrep_cluster_state_uuid    c3271751-4091-11e2-0800-8f9f852b5de4
+    wsrep_cluster_status    Primary
+    wsrep_connected ON
+    wsrep_local_index   1
+    wsrep_provider_name Galera
+    wsrep_provider_vendor   Codership Oy <info@codership.com>
+    wsrep_provider_version  2.2(r115)
+    wsrep_ready ON
+
+Some interesting field are _wsrep_local_state_ for the node status, _wsrep_local_state_uuid_ for the last uuid commited on this node
+
+    # nc localhost 9200
+    HTTP/1.1 200 OK
+    Content-Type: text/plain
+
+    Percona XtraDB Cluster Node is synced.
+
+The http service seems work fine, too :)
+
+
+**This two checks should be done on all nodes**

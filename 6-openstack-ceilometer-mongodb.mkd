@@ -1,0 +1,305 @@
+Title: Using a sharding/replicaSet mongodb with ceilometer
+Date: 2013-08-14 17:00
+Category: Openstack
+Tags: openstack, mongo, ceilometer
+
+Ceilometer aims to deliver a unique point of contact to acquire all samples across all OpenStack components.</br >
+The most commonly used backend is mongodb, this is the only one which implements all ceilometer features.
+
+Due to its nature, collecting many samples from multiple sources, the ceilometer database grows quickly.<br />
+For havana, to handle this we have:
+
+* implemented [database ttl](https://blueprints.launchpad.net/ceilometer/+spec/db-ttl) to only keep usefull data for billing or alarming
+* added support to [full mongo uri format](https://github.com/openstack/ceilometer/commit/3ad779edf545199a185f0fa9a2f850bc3db7488d)
+
+I will focus on the second part with an example of mongodb architecture/setup to distribute the ceilometer data into different servers with two replicats of the data.
+
+## My setup
+
+Hards:
+
+* Three servers for the mongodb config servers and mongos routing servers (mongos[1,3])
+* Four servers for the mongodb data servers (two shard with two replicaset) (mongod[1,4])
+
+Softs:
+
+* Ubuntu Precise
+* Openstack havana-3
+* Mongodb 2.4 (from 10gen repository)
+
+Openstack is installed on other servers, this focuses only on the mongo part.
+
+## Architecture
+
+![Mongodb shrading/replicaset architecture](/images/mongo_bg.png)
+
+
+Some vocabulary (extracted from mongodb man pages):
+
+Mongos: mongos  for  "MongoDB Shard," is a routing service for MongoDB shard configurations that processes queries from the application layer, and determines the location of this data in the sharded cluster, in order to complete these operations<br />
+Mongod config servers : This mongod instances serve as the config database of a shard cluster.<br />
+Mongod data servers: This mongod instances are shared in a partitioned cluster, this ones can be replicated<br />
+
+For a mongo client's point of view, mongos is completly transparent, mongos behaves identically to any other mongod.
+
+## Installation/Configuration
+
+The openstack installation will not be addressed, I will only focus on mongodb and ceilometer database configuration
+
+### Installation mongodb
+
+On each mongodb server, add the mongo 10gen repository and install mongodb:
+
+    :::bash
+    apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
+    echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | tee /etc/apt/sources.list.d/10gen.list
+    apt-get update
+    apt-get install mongodb-10gen
+
+On mongodb config servers (mongos[1,3]) : 
+
+Create the init script for mongos, for ubuntu:
+
+    :::bash
+    $ cat > /etc/init/mongos.conf <<EOF
+    limit nofile 20000 20000
+    kill timeout 300 # wait 300s between SIGTERM and SIGKILL.
+    start on runlevel [2345]
+    stop on runlevel [06]
+    script
+      ENABLE_MONGOS="yes"
+      if [ -f /etc/default/mongos ]; then . /etc/default/mongos; fi
+      if [ "x\$ENABLE_MONGOS" = "xyes" ]; then exec start-stop-daemon --start --quiet --chuid mongodb --exec  /usr/bin/mongos -- --config /etc/mongos.conf; fi
+    end script
+    EOF
+
+### Configure MongoDB
+
+Enable config server mode for mongod (on mongos[1,3])
+
+    :::bash
+    $ echo "configsvr = true" >> /etc/mongodb.conf
+    $ restart mongodb
+
+Set the config server list to mongos (on mongos[1,3])
+
+    :::bash
+    $ echo "configdb = mongos1:27019,mongos2:27019,mongos3:27019" >> /etc/mongos.conf
+    $ restart mongos
+
+Configure the first shard replicaset mongodb data servers (on mongod[1,2])
+
+    :::bash
+    $ echo "replSet = rs1" >> /etc/mongodb.conf
+    $ echo "shardsvr = true" >> /etc/mongodb.conf
+    $ restart mongodb
+
+Configure the second shard replicaset mongodb data servers (on mongod[3,4])
+
+    :::bash
+    $ echo "replSet = rs2" >> /etc/mongodb.conf
+    $ echo "shardsvr = true" >> /etc/mongodb.conf
+    $ restart mongodb
+
+
+Mongos act like a classic mongodb database, used ports are identical to mongod (in normal mode) 27017 and 28017<br />
+The mongodb data server (in sharding mode) bind ports are 27017 and 28018<br />
+The mongodb config server bind ports are 27019 and 28019
+
+
+### Shrad/Replicaset initialization
+
+Initialize both replicaSets:
+
+    :::js
+    $ mongo --host mongod1 --port 27018 
+    MongoDB shell version: 2.4.5
+    connecting to: mongod1:27018/test
+    > rs.initiate()
+    {
+            "info2" : "no configuration explicitly specified -- making rs1",
+            "me" : "mongod1:27018",
+            "info" : "Config now saved locally.  Should come online in about a minute.",
+            "ok" : 1
+    }
+    > rs.add('mongod2:27018')
+    { "ok" : 1 }
+    > exit
+
+    $ mongo --host mongod3 --port 27018 
+    MongoDB shell version: 2.4.5
+    connecting to: mongod3:27018/test
+    > rs.initiate()
+    {
+            "info2" : "no configuration explicitly specified -- making rs2",
+            "me" : "mongod3:27018",
+            "info" : "Config now saved locally.  Should come online in about a minute.",
+            "ok" : 1
+    }
+    > rs.add('mongod4:27018')
+    { "ok" : 1 }
+    > exit
+
+Add these sharding replicaSets to the mongos cluster:
+
+    :::js
+    $ mongo --host mongos1 --port 27017
+    MongoDB shell version: 2.4.5
+    connecting to: mongos1:27017/test
+    mongos> sh.addShard("rs1/mongod1:27018")
+    { "shardAdded" : "rs1", "ok" : 1 }
+    mongos> sh.addShard("rs2/mongod3:27018")
+    { "shardAdded" : "rs2", "ok" : 1 }
+    mongos> exit
+
+Check the mongodb cluster configuration:
+
+    $ mongo --host mongos1 --port 27017                           
+    MongoDB shell version: 2.4.5
+    connecting to: mongos1:27017/test
+    mongos> sh.status()
+    --- Sharding Status --- 
+      sharding version: {
+            "_id" : 1,
+            "version" : 3,
+            "minCompatibleVersion" : 3,
+            "currentVersion" : 4,
+            "clusterId" : ObjectId("52035f47675c6dd64b4f77d3")
+    }
+      shards:
+            {  "_id" : "rs1",  "host" : "rs1/mongod1:27018,mongod2:27018" }
+            {  "_id" : "rs2",  "host" : "rs2/mongod3:27018,mongod4:27018" }
+      databases:
+            {  "_id" : "admin",  "partitioned" : false,  "primary" : "config" }
+
+
+*Two shards are present, rs1 and rs2, that use rs1 and rs2 replicaSets<br />
+Only the admin database is present on the config mongodb server*
+
+
+### Configure the sharding for the ceilometer database
+
+Shard the ceilometer database:
+
+    :::js
+    $ mongo --host mongos1 --port 27017                           
+    MongoDB shell version: 2.4.5
+    connecting to: mongos1:27017/test
+    > sh.enableSharding("ceilometer")
+    { "ok" : 1 }
+    mongos> sh.status()
+    --- Sharding Status --- 
+      sharding version: {
+            "_id" : 1,
+            "version" : 3,
+            "minCompatibleVersion" : 3,
+            "currentVersion" : 4,
+            "clusterId" : ObjectId("52035f47675c6dd64b4f77d3")
+    }
+      shards:
+            {  "_id" : "rs1",  "host" : "rs1/mongod1:27018,mongod2:27018" }
+            {  "_id" : "rs2",  "host" : "rs2/mongod3:27018,mongod4:27018" }
+      databases:
+            {  "_id" : "admin",  "partitioned" : false,  "primary" : "config" }
+            {  "_id" : "test",  "partitioned" : false,  "primary" : "rs2" }
+            {  "_id" : "ceilometer",  "partitioned" : true,  "primary" : "rs1" }
+
+*Here the flag partitioned of the ceilometer database is set to true*
+
+When sharding is enabled on a database, the next step is to choose how to distribute the datas:
+
+The following example shows a distribution of the samples by counter_name
+
+    :::js
+    $ mongo --host mongos1 --port 27017
+    MongoDB shell version: 2.4.5
+    connecting to: mongos1:27017/test    
+    > use ceilometer
+    > db.meter.ensureIndex({'counter_name': 1})
+    > sh.shardCollection("ceilometer.meter", {'counter_name': 1})
+
+*Note that an index has been created to distribute the collection*
+
+
+[ShardTag](http://docs.mongodb.org/manual/reference/method/sh.addShardTag) can be used to control the distribution of the data instead of letting mongos choose the destination, ex:
+counter_name == 'image' go to first shard.
+
+### Configuration of ceilometer
+
+On the ceilometer part, set all the mongos servers:
+
+    :::bash
+    $ tail -2 /etc/ceilometer/ceilometer.conf
+    [database]
+    connection = mongodb://mongos1:27017,mongos2:27017,mongos3:27017/ceilometer
+
+The mongo client pymongo will failover between this three mongos servers
+
+More complicated uri can be used:
+    
+    connection = mongodb://mongos1:27017,mongos2:27017,mongos3:27017/ceilometer?readPreference=secondary&w=2&wtimeoutMS=2000
+
+*Note: if shard is not used but only replicatSet, you can put only a part of the replicat node on the connection url with the name of the replicaset
+and pymongo will discover the other nodes*
+
+    connection = mongodb://mongosomewhere:27017/ceilometer?replicatSet=my_rs
+
+## Testing
+
+Play a bit with openstack, start vm, upload files in your swift and then check the reparition:
+
+    # mongo ceilometer --host mongod1 --port 27018
+    MongoDB shell version: 2.4.5
+    connecting to: mongod1:27018/ceilometer
+    rs1:PRIMARY> db.meter.group({key: {'counter_name': 1}, initial: {}, reduce: function ( curr, result ) { } })
+    [
+            { "counter_name" : "image" },
+            { "counter_name" : "storage.objects" },
+            { "counter_name" : "image.size" },
+            { "counter_name" : "storage.objects.size" },
+            { "counter_name" : "storage.objects.containers" },
+            { "counter_name" : "image.download" },
+            { "counter_name" : "image.serve" },
+            { "counter_name" : "instance" },
+            { "counter_name" : "instance:m1.tiny" },
+            { "counter_name" : "network.outgoing.packets" },
+            { "counter_name" : "network.incoming.bytes" },
+            { "counter_name" : "network.outgoing.bytes" },
+            { "counter_name" : "network.incoming.packets" }
+    ]
+
+    $ mongo ceilometer --host mongod3 --port 27018
+    MongoDB shell version: 2.4.5
+    connecting to: mongod3:27018/ceilometer
+    rs2:PRIMARY> db.meter.group({key: {'counter_name': 1}, initial: {}, reduce: function ( curr, result ) { } })
+    [
+            { "counter_name" : "cpu" },
+            { "counter_name" : "disk.write.requests" },
+            { "counter_name" : "disk.write.bytes" },
+            { "counter_name" : "disk.read.bytes" },
+            { "counter_name" : "disk.read.requests" },
+            { "counter_name" : "cpu_util" }
+    ]
+
+
+For sure, counter_name is not the perfect field to split the collections, but the distibution depends on the purpose of the samples recorded in ceilometer.<br />
+For more explaination about how to choose the shard key: [http://docs.mongodb.org/manual/tutorial/choose-a-shard-key/](http://docs.mongodb.org/manual/tutorial/choose-a-shard-key/)
+
+
+You can randomly stop a mongod or a mongos and see that nothing bad happen :) thanks to mongo.
+
+## Note about production installation
+
+Check-list for a production environment:
+
+* a replicaSet of at least two nodes of each shard to always have the data twice or more
+* having 3 mongo configuration servers no less, no more to always have the data distribution configuration
+* and two mongos for the failover if one is down or needs maintenance
+
+You can have many shards per physical servers, in case you want to verticaly scale mongo<br />
+(just be sure that the replicatSets of each shard are not on the same servers ;) )<br />
+The benefit of this is that if you have many disks on your server you build one shard per disk instead of having a big raid0 off all disks.<br />
+This increases the number of IO per seconds significaly.
+
+
+

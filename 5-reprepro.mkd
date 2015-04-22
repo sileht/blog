@@ -1,0 +1,150 @@
+Title: Create a smart debian repository with reprepro
+Date: 2012-12-11 09:49
+Category: Debian
+Tags: debian
+
+
+[reprepro](http://packages.debian.org/sid/reprepro) is "a tool to manage a repository of Debian packages (.deb, .udeb, .dsc, ...). It stores files either being injected manually or downloaded from some other repository (partially) mirrored into one pool/ hierarchy"
+
+
+So my goal is ot have a local repository with:
+
+*   a partial mirror of [percona galera cluster](<http://repo.percona.com/apt/)
+*   a partial mirror of [dell openmanage](<http://linux.dell.com/repo/community/deb/latest/) (bah not opensource :( )  
+*   some packages from sid and squeeze \(openssl and apt-cacher-ng) 
+*   some packages from my self 
+
+
+The directory of the repository will be in /var/www/debian/ to export it easly with a webserver.
+
+#### Installation and configuration
+
+Start to install the reprepro package and create the repository directories:
+
+    # apt-get install reprepro
+    # mkdir -p /var/www/debian/{conf,temp,incoming}
+    # cd /var/www/debian
+
+Reprepro needs some configuration files:
+
+* _conf/distributions_ to descibe the repository layout and the supported distributions and components
+* _conf/updates_ to describe the list of upstream repository where reprepro can mirror packages
+* _conf/incoming_ to describe local directory where reprepro can import packages
+* _conf/uploders_ thaht contains rules of who can import packages in the archives
+
+Create the file **conf/updates** with the list of sources repository:
+
+    # cat > conf/updates <<EOF
+    Name: percona
+    Suite: squeeze
+    Components: main>percona
+    Method: http://repo.percona.com/apt/
+    VerifyRelease: CD2EFD2A
+
+    Name: openstack
+    Components: main
+    Method: http://ftp.gplhost.com/debian/
+    VerifyRelease: 0B849883
+
+    Name: squeeze
+    Components: main
+    Method: http://ftp.fr.debian.org/debian/
+    FilterFormula: $Source (== openssl)
+    VerifyRelease: 473041FA
+
+    Name: sid
+    Components: main
+    Method: http://ftp.fr.debian.org/debian/
+    FilterFormula: $Source (== apt-cacher-ng)
+    VerifyRelease: 55BE302B
+
+    Name: dell
+    Method: http://linux.dell.com/repo/community/deb/latest/
+    Suite: .
+    Flat: dell
+    Architectures: amd64
+    VerifyRelease: 34D8786F
+    EOF
+
+Note: the dell is flat, it will be converted to a classic repository by reprepro <br />
+Note: the FilterFormula field to set the list of mirrored packages  <br />
+Note: we can change the "Components" field on the fly with "main>percona"
+
+Next, import all needed gpg keys :
+
+    # gpg --keyserver pool.sks-keyservers.net --recv-key CD2EFD2A # percona
+    # gpg --keyserver pool.sks-keyservers.net --recv-key 34D8786F # dell
+    # gpg --keyserver pool.sks-keyservers.net --recv-key 55BE302B # debian sid
+    # gpg --keyserver pool.sks-keyservers.net --recv-key 473041FA # debian squeeze
+    # gpg --keyserver pool.sks-keyservers.net --recv-key B98321F9 # debian squeeze
+
+Create the **conf/distributions**:
+
+    cat > conf/distributions <<EOF
+    Origin: Mehdi ABAAKOUK <sileht@sileht.net>
+    Label: Mehdi ABAAKOUK <sileht@sileht.net>
+    Codename: wheezy
+    Suite: testing
+    Architectures: amd64 source
+    Components: main dell local
+    Description: local debian archive
+    Tracking: minimal
+    Update: dell
+
+    Origin: Mehdi ABAAKOUK <sileht@sileht.net>
+    Label: Mehdi ABAAKOUK <sileht@sileht.net>
+    Codename: wheezy-backports
+    Suite: testing
+    Architectures: amd64 source
+    Components: main
+    Description: local debian archive
+    Tracking: minimal
+    Update: openstack
+
+    Origin: Mehdi ABAAKOUK <sileht@sileht.net>
+    Label: Mehdi ABAAKOUK <sileht@sileht.net>
+    Codename: squeeze
+    Suite: stable
+    Architectures: amd64 source
+    Components: main percona
+    Description: local debian archive
+    Tracking: minimal
+    Update: percona squeeze
+
+    Origin: Mehdi ABAAKOUK <sileht@sileht.net>
+    Label: Mehdi ABAAKOUK <sileht@sileht.net>
+    Codename: openstack
+    Suite: openstack
+    Architectures: amd64 source
+    Components: main
+    Description: local debian archive
+    Tracking: minimal
+    Update: openstack
+    EOF
+
+Here they are 4 repositories that import packages from a upstream repository specified in the "Update" field.
+
+And the last file for my self built packages **conf/incoming**
+
+    cat > conf/incoming <<EOF
+    Name: incoming
+    IncomingDir: /var/www/debian/incoming
+    TempDir: /var/www/debian/temp
+    Allow: wheezy
+    EOF
+
+#### Run 
+
+Now, the configuration is ready, the only remmaning task is importing packages from upstream repositories and my local directory (ie: /var/www/debian/incoming
+
+    # reprepro -b /var/www/debian updates
+    # reprepro -b /var/www/debian processincoming incoming
+
+The repository can also be browsed like this:
+
+    # reprepro -b /var/www/debian list wheezy
+    # reprepro -b /var/www.ori/debian  -C percona list squeeze
+
+The packages update and import can be done automaticaly with a simple cron task
+
+
