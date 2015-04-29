@@ -3,7 +3,7 @@ First step in my involvement in openstack
 
 :date: 2012-05-24 17:30
 :category: Openstack
-:tags: upstream-university, Openstack, Debian, Munin
+:tags: upstream-university, openstack, debian, munin
 
 Due to a recent interest for the Openstack project, I have begun to test and to do some work around it.
 

@@ -1,16 +1,16 @@
-About me
+About
 ##############################
 
 
-I'm Mehdi Abaakouk, I live in Toulouse (France) and I have been using Linux for more than ten years.
+I'm Mehdi Abaakouk, I live in Toulouse (France) and I have been using Linux for more than fifteen years.
 
-| My current job is Python Developer for `eNovance/Redhat <http://www.enovance.com>`_. (Curriculum Vitae: `web <http://cv.sileht.net/>`_, `pdf <http://cv.sileht.net/CV.pdf>`_, `odt <http://cv.sileht.net/CV.odt>`_) 
-| My main interrests in the computer science are the opensource softwares and how Internet works under the hood, and I like to hack them.
+| My current job is **Software Engineer** for `Redhat <http://www.redhat.com>`_. (Curriculum Vitae: `web <http://cv.sileht.net/>`_, `pdf <http://cv.sileht.net/CV.pdf>`_, `odt <http://cv.sileht.net/CV.odt>`_) 
+| My main interrests in the computer science are the **opensource softwares** and how Internet works under the hood, and I **really** like to hack them.
 |
 
 Here is a quick list of my contribution to the opensource world:
 
-- `Openstack <http://stackalytics.com/?metric=commits&release=kilo&user_id=sileht>`_ where I am Core developer of the ceilometer and oslo.messaging project
+- `Openstack <http://stackalytics.com/?metric=commits&release=kilo&user_id=sileht>`_ where I am Core developer of the `Ceilometer <https://github.com/openstack/ceilometer>`_, `Gnocchi <https://github.com/openstack/gnocchi>`_, `Tooz <https://github.com/openstack/tooz>`_ and `Oslo.messaging <https://github.com/openstack/oslo.messaging>`_ project
 - `Official Debian Packaging <http://qa.debian.org/developer.php?login=sileht%40sileht.net>`_ 
 - `Bird-LG <https://github.com/sileht/bird-lg/>`_ a BGP looking glass for bird written in python/flask (started in 2011)
 - `Listen <http://listen-project.org>`_ a music player/manager for GNOME written in python/gtk/gstreamer (2005-2012)
@@ -32,3 +32,4 @@ In this context, since 2010, I have set up and maintain:
 I make the regular system administration tasks too.
 
 
+And also I like to dance on crazy swing rhythm ;p

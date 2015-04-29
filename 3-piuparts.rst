@@ -3,7 +3,7 @@ Adding schroot support to piuparts
 
 :date: 2012-06-11 10:49
 :category: Debian
-:tags: upstream-university, Debian, piuparts
+:tags: upstream-university, debian, piuparts
 
 | For my work on the Openstack packages, I have decided to make some tests with piuparts. So I have installed piuparts, read the manual, and made my first test.
 | By default, piuparts uses deboostrap to make chroot environment for packages testing. Other methods are pbuilder or lvm snapshot.

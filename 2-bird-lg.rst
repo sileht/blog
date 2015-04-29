@@ -3,7 +3,7 @@ From the tetaneutral.net to a looking glass for bird
 
 :date: 2012-05-31 14:36
 :category: Tetaneutral.net
-:tags: Tetaneutral.net, bird, looking-glass
+:tags: tetaneutral.net, bird, looking-glass
 
 During one year of participation in the `tetaneutral.net <http://www.tetaneutral.net/>`_ project,
 a French Associative Internet Service Provider and Host Provider,
