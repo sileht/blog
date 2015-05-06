@@ -9,46 +9,58 @@ A while ago, I have made a quick `article/demo </autoscaling-with-heat-and-ceilo
 the builtin emulated Amazon CloudWatch resources of Heat.
 
 To resume, when you were creating a stack, instances of this stack generate
-notification that was received by ceilometer converted into samples and written
-to a database usually MongoDB. On another side Heat creates some alarms with
-the ceilometer-api that will trigger the heat autoscaling actions. These alarms
-define some rules against statistics on the previously recorded samples.
-These statistics were computed on the fly when the alarms was evaluated.
+notification that were received by Ceilometer, then converted into samples and
+written to a database; usually MongoDB. On another side Heat, creates some
+alarms using ceilometer-api that will trigger the Geat autoscaling actions.
+These alarms define some rules against statistics on the previously recorded
+samples. These statistics were computed on the fly when the alarms were
+evaluated.
 
 The main issue was that the performance for evaluating all the defined alarms
-directly depended on the number of alarms and the complexity to compute the
-statistics. The computation of a statistics would result in a map
-reduce in MongoDB, more you ceilometer-alarm-evaluator workers and nodes, more your MongoDB does map reduce operation in parallel.
+directly was tied to the number of alarms and to the complexity of computing
+the statistics. The computation of statistics would result in a map reduce in
+MongoDB. Therefore, the more you would have ceilometer-alarm-evaluator workers
+and nodes, the more your MongoDB would do map reduce operations in parallel.
 
-So, the more you want to reduce the time between a metric that will trigger alarm is received
-and the moment of alarm is evaluated and trigger requested actions, the more you need workers and nodes and a solid and rapid MongoDB.
+In order to reduce the time between the receiving of a measure that would
+trigger alarm and the moment that alarm is evaluated and triggered, you need
+more workers and nodes and a solid and rapid MongoDB.
 
-In Kilo, Ceilometer got a new dispatcher driver: Gnocchi. Instead of writing samples  directly into the database, Ceilometer converts them into Gnocchi elements (resource, metric and measurement) and
-post them on the Gnocchi REST API.
+Starting with Kilo, Ceilometer has a new dispatcher driver: Gnocchi. Instead of
+writing samples directly into the database, Ceilometer converts them into
+Gnocchi elements (resource, metric and measurement) and post them on the
+Gnocchi REST API.
 
-Contrary to the current Ceilometer database dispatcher, Gnocchi aggregates
-what it receives, and doesn't compute anything when you want to retrieve
-it.There is no more on the fly computation you can found more information about that
-in Julien Danjou’s articles `"ceilometer the gnocchi experiment" <https://julien.danjou.info/blog/2014/openstack-ceilometer-the-gnocchi-experiment>`__ and `"gnocchi first release" <https://julien.danjou.info/blog/2015/openstack-gnocchi-first-release>`__,
+Contrary to the current Ceilometer database dispatcher, Gnocchi aggregates what
+it receives, and doesn't compute anything when you want to retrieve statistics.
+There is no more on the fly computation. You can find more information about
+that in Julien Danjou’s articles `"Ceilometer, the Gnocchi experiment"
+<https://julien.danjou.info/blog/2014/openstack-ceilometer-the-gnocchi-experiment>`__
+and `"Gnocchi first release"
+<https://julien.danjou.info/blog/2015/openstack-gnocchi-first-release>`__,
 
-On the Ceilometer alarm side, the system got some new alarm rules type dedicated to
-Gnocchi. So instead of describing rules that would trigger statistics computing, we define rules that will just get the result of pre-computed statistics.
+On the Ceilometer alarm side, the system got some new alarm rule types
+dedicated to Gnocchi. So instead of describing rules that would trigger
+statistics computing, we define rules that will just get the result of
+pre-computed statistics.
 
-That makes the Ceilometer alarm evaluators much more performant, the evaluation of an
-alarm just result to one HTTP call. On the Gnocchi side, when using the  Swift backend,
-this will go down to doing one SQL request to check RBAC, and one another HTTP call to Swift to retrieve the result. No more on-the-fly statistics computation of any data.
+That makes the Ceilometer alarm evaluators much more performant. The evaluation
+of an alarm just result in one single HTTP call. On the Gnocchi side, when
+using the Swift backend, this will go down to doing one SQL request to check
+RBAC, and one another HTTP call to Swift to retrieve the result. No more
+on-the-fly statistics computation of any kind.
 
 The side effect of that system is that you need to tell Gnocchi how you want to pre
 compute/aggregate data, that's all.
 
 
-Playing with all of that with heat
+Playing with all of that with Heat
 ==================================
 
 Devstack setup
 --------------
 
-Boot a vm, install devstack, configure your stack. Enable all Gnocchi/Heat/Ceilometer services in your localrc:
+Boot a VM, install devstack, configure your stack. Enable all Gnocchi/Heat/Ceilometer services in your localrc:
 
 
 .. code-block:: shell
@@ -64,7 +76,7 @@ Boot a vm, install devstack, configure your stack. Enable all Gnocchi/Heat/Ceilo
     IMAGE_URLS="http://ftp.free.fr/mirrors/fedora.redhat.com/fedora/linux/releases/21/Cloud/Images/x86_64/Fedora-Cloud-Base-20141203-21.x86_64.qcow2"
     GNOCCHI_COORDINATOR_URL=redis://localhost:6379?timeout=5
 
-Enable a quicker processing of the ceilometer pipeline (every 10sec):
+Enable an eager processing of the ceilometer pipeline (every 10sec):
 
 .. code-block:: shell
 
@@ -79,13 +91,13 @@ Add the 'last' aggregation method to the default archive_policy of Gnocchi:
     default_aggregation_methods = mean,min,max,sum,std,median,count,last,95pct
 
 
-And go !
+And go!
 
 .. code-block:: shell
 
     $ ./stack.sh
 
-Let’s see some important configuration done by devstack to enable Gnocchi with Mysql and file as backend.
+Let’s see some important configuration done by devstack to enable Gnocchi with MySQL and file as backend.
 
 In Ceilometer, it have replaced the database dispatcher by Gnocchi with the following configuration:
 
@@ -100,7 +112,10 @@ In Ceilometer, it have replaced the database dispatcher by Gnocchi with the foll
     archive_policy = low
     url = http://192.168.3.51:8041
 
-Note that it configures a filter to filter out all samples generated by Gnocchi. Otherwise each times we write to swift that will generated samples to write again to swift and this will create a storm of samples that grow indefinitely. The filter permit to break this unending loop.
+Note that it configures a filter to filter out all samples generated by
+Gnocchi. Otherwise each time we write to Swift that will generate samples to
+write again to Swift and this will create a storm of samples that grows
+indefinitely. The filter permits to break this infinite loop.
 
 Also for alarming, devstack set the Gnocchi API endpoint:
 
@@ -109,7 +124,7 @@ Also for alarming, devstack set the Gnocchi API endpoint:
     [alarms]
     gnocchi_url = http://192.168.3.51:8041
 
-On Gnocchi side, the file driver have been configured for the storage and the SQL database for the indexer:
+On Gnocchi side, the file driver has been configured for the storage and the SQL database for the indexer:
 
 .. code-block:: ini
 
@@ -121,7 +136,8 @@ On Gnocchi side, the file driver have been configured for the storage and the SQ
     url = mysql://root:password@127.0.0.1/gnocchi?charset=utf8
 
 
-In case of Swift have been chosen instead of file, you will get:
+In the case where the Swift driver has been chosen instead of the file one, you
+will get:
 
 .. code-block:: ini
 
@@ -133,8 +149,9 @@ In case of Swift have been chosen instead of file, you will get:
     swift_key = password
     swift_user = gnocchi_swift
 
-*Note: The default devstack configuration of Swift can't handled the load generated by Gnocchi and Ceilometer,
-The number of swift workers need to be increased.*
+*Note: The default devstack configuration of Swift can't handle the load
+generated by Gnocchi and Ceilometer, The number of swift workers needs to be
+increased.*
 
 Heat stack setup
 ----------------
@@ -171,9 +188,9 @@ Once everything is up, we can create our first stack with these `templates <http
     | web_server_scaleup_policy   | db53a21a207e48c2ac9916285ce85a55             | OS::Heat::ScalingPolicy                            | CREATE_COMPLETE | 2015-04-22T13:51:58Z |
     +-----------------------------+----------------------------------------------+----------------------------------------------------+-----------------+----------------------+
 
-*Obviouly you need to change the networks ids by yours.*
+*Obviouly you need to change the networks ids with yours.*
 
-Quick looks of an alarm definition in the Heat templates:
+Quick look of an alarm definition in the Heat templates:
 
 .. code-block:: yaml
 
@@ -199,7 +216,9 @@ Quick looks of an alarm definition in the Heat templates:
 The alarm definition looks almost like the legacy Ceilometer one.
 The *query* is identical to the POST data of a `search API request in Gnocchi <http://docs.openstack.org/developer/gnocchi/rest.html#aggregation-across-metrics>`__
 
-Also the Gnocchi resource attributes are strictly defined, "server_group" is one of the extended attributes of an instance. And of course the 'last CPU' is just for demo.
+Also, the Gnocchi resource attributes are strictly defined, "server_group" is
+one of the extended attributes of an instance. And of course the 'last CPU' is
+just for demo.
 
 Now, take a look to the created Nova instances:
 
@@ -271,7 +290,9 @@ The Ceilometer alarms have been created:
     +---------------------------+--------------------------------------------------------------------------+
 
 
-Gnocchi provides some basic graphing view of resources, for now this is mainly for development/debugging purpose, to access it with keystone middleware enable, you inject the token to all your requests like this:
+Gnocchi provides some basic graphing view of resources. For now this is mainly
+for development/debugging purpose. To access it when the keystone middleware is
+enabled, you can inject the token to all your requests using this:
 
 .. code-block:: shell
 
