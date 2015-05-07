@@ -5,26 +5,25 @@
 :status: draft
 
 
-A while ago, I have made a quick `article/demo </autoscaling-with-heat-and-ceilometer>`_ of how to use Ceilometer instead of
-the builtin emulated Amazon CloudWatch resources of Heat.
+A while ago, I had made a quick `article/demo </autoscaling-with-heat-and-ceilometer>`_ of how to use Ceilometer instead of
+the built-in emulated Amazon CloudWatch resources of Heat.
 
-To resume, when you were creating a stack, instances of this stack generate
-notification that were received by Ceilometer, then converted into samples and
-written to a database; usually MongoDB. On another side Heat, creates some
-alarms using ceilometer-api that will trigger the Geat autoscaling actions.
-These alarms define some rules against statistics on the previously recorded
+To extend on the previous post, when you create a stack, instances of the stack generated
+notification that were received by Ceilometer and converted into samples to be
+written to a database; usually MongoDB. On the other end, Heat creates some
+alarms using Ceilometer API that would trigger the Heat autoscaling actions.
+These alarms defined some rules against statistics based on the previously recorded
 samples. These statistics were computed on the fly when the alarms were
 evaluated.
 
 The main issue was that the performance for evaluating all the defined alarms
 directly was tied to the number of alarms and to the complexity of computing
-the statistics. The computation of statistics would result in a map reduce in
-MongoDB. Therefore, the more you would have ceilometer-alarm-evaluator workers
-and nodes, the more your MongoDB would do map reduce operations in parallel.
+the statistics. The computation of a statistic would result in a map reduce in
+MongoDB. Therefore, where additional ceilometer-alarm-evaluator workers
+and nodes would result in additional MongoDB map reduce operations in parallel.
 
-In order to reduce the time between the receiving of a measure that would
-trigger alarm and the moment that alarm is evaluated and triggered, you need
-more workers and nodes and a solid and rapid MongoDB.
+In order to reduce the time between alarm evalutions, more workers and nodes
+are required as well as a solid MongoDB configuration to handle the load.
 
 Starting with Kilo, Ceilometer has a new dispatcher driver: Gnocchi. Instead of
 writing samples directly into the database, Ceilometer converts them into
@@ -33,7 +32,7 @@ Gnocchi REST API.
 
 Contrary to the current Ceilometer database dispatcher, Gnocchi aggregates what
 it receives, and doesn't compute anything when you want to retrieve statistics.
-There is no more on the fly computation. You can find more information about
+There is no more on the fly computations! You can find more information about
 that in Julien Danjou’s articles `"Ceilometer, the Gnocchi experiment"
 <https://julien.danjou.info/blog/2014/openstack-ceilometer-the-gnocchi-experiment>`__
 and `"Gnocchi first release"
@@ -46,8 +45,8 @@ pre-computed statistics.
 
 That makes the Ceilometer alarm evaluators much more performant. The evaluation
 of an alarm just result in one single HTTP call. On the Gnocchi side, when
-using the Swift backend, this will go down to doing one SQL request to check
-RBAC, and one another HTTP call to Swift to retrieve the result. No more
+using the Swift backend, this will break down info one SQL request to check
+RBAC, and another HTTP call to Swift to retrieve the result. No more
 on-the-fly statistics computation of any kind.
 
 The side effect of that system is that you need to tell Gnocchi how you want to pre
@@ -99,7 +98,7 @@ And go!
 
 Let’s see some important configuration done by devstack to enable Gnocchi with MySQL and file as backend.
 
-In Ceilometer, it have replaced the database dispatcher by Gnocchi with the following configuration:
+In Ceilometer, it has replaced the database dispatcher by Gnocchi with the following configuration:
 
 .. code-block:: ini
 
@@ -117,7 +116,7 @@ Gnocchi. Otherwise each time we write to Swift that will generate samples to
 write again to Swift and this will create a storm of samples that grows
 indefinitely. The filter permits to break this infinite loop.
 
-Also for alarming, devstack set the Gnocchi API endpoint:
+Also for alarming, devstack sets the Gnocchi API endpoint:
 
 .. code-block:: ini
 
@@ -136,8 +135,7 @@ On Gnocchi side, the file driver has been configured for the storage and the SQL
     url = mysql://root:password@127.0.0.1/gnocchi?charset=utf8
 
 
-In the case where the Swift driver has been chosen instead of the file one, you
-will get:
+If Swift have been has been chosen as storage backend you will get:
 
 .. code-block:: ini
 
@@ -188,9 +186,9 @@ Once everything is up, we can create our first stack with these `templates <http
     | web_server_scaleup_policy   | db53a21a207e48c2ac9916285ce85a55             | OS::Heat::ScalingPolicy                            | CREATE_COMPLETE | 2015-04-22T13:51:58Z |
     +-----------------------------+----------------------------------------------+----------------------------------------------------+-----------------+----------------------+
 
-*Obviouly you need to change the networks ids with yours.*
+*Obviouly you will need to change the networks ids to match your own environment.*
 
-Quick look of an alarm definition in the Heat templates:
+Taking a quick look at an alarm definition in the Heat templates:
 
 .. code-block:: yaml
 
