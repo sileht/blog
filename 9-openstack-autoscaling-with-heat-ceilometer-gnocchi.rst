@@ -227,6 +227,7 @@ Now, take a look to the created Nova instances:
     | ID                                   | Name                                                  | Status | Task State | Power State | Networks            |
     +--------------------------------------+-------------------------------------------------------+--------+------------+-------------+---------------------+
     | 757ca456-a436-4770-9ce2-029d2b717340 | gn-qxjx-h26oilfiz4mu-ao3cn5ctyin2-server-ze4ulgwkg77y | ACTIVE |      -     | Running     | admpriv=192.168.0.7 |
+    | 9e9cc43c-0db0-4191-b886-8d9930a7a558 | gnocchi2-db-6hlmbgeikp56                              | ACTIVE |      -     | Running     | admpriv=192.168.0.6 |
     +--------------------------------------+-------------------------------------------------------+--------+------------+-------------+---------------------+
 
 Then in the terminal of the first instance (gn-qxjx-h26oilfiz4mu-ao3cn5ctyin2-server-ze4ulgwkg77y), I generated some load:
@@ -245,6 +246,7 @@ Some minutes later, in Nova, I can see the new instance booted by Heat:
     +--------------------------------------+-------------------------------------------------------+--------+------------+-------------+---------------------+
     | ID                                   | Name                                                  | Status | Task State | Power State | Networks            |
     +--------------------------------------+-------------------------------------------------------+--------+------------+-------------+---------------------+
+    | 53b5f608-320c-4ead-82e2-bde0b500ebd8 | gn-9395-d70e19b0106b-b781771ab85d-server-a855902efk26 | ACTIVE |      -     | Running     | admpriv=192.168.0.8 |
     | 757ca456-a436-4770-9ce2-029d2b717340 | gn-qxjx-h26oilfiz4mu-ao3cn5ctyin2-server-ze4ulgwkg77y | ACTIVE |      -     | Running     | admpriv=192.168.0.7 |
     | 9e9cc43c-0db0-4191-b886-8d9930a7a558 | gnocchi2-db-6hlmbgeikp56                              | ACTIVE |      -     | Running     | admpriv=192.168.0.6 |
     +--------------------------------------+-------------------------------------------------------+--------+------------+-------------+---------------------+
