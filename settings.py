@@ -39,3 +39,6 @@ RESPONSIVE_IMAGES = True  # better_figures_and_images
 LOAD_CONTENT_CACHE = False
 OUTPUT_PATH = "/var/www/blog.sileht.net/output/dev"
 DELETE_OUTPUT_DIRECTORY = True
+
+GOOGLE_ANALYTICS_UNIVERSAL = "UA-4618550-4"
+GOOGLE_ANALYTICS_UNIVERSAL_PROPERTY = "auto"
