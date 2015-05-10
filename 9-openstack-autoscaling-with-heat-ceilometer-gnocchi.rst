@@ -1,8 +1,7 @@
 :title: Autoscaling with Heat, Ceilometer and Gnocchi
-:date: 2015-04-17 07:48
+:date: 2015-05-10 08:48
 :category: Openstack
 :tags: openstack, ceilometer, gnocchi, heat
-:status: draft
 
 
 A while ago, I had made a quick `article/demo </autoscaling-with-heat-and-ceilometer>`_ of how to use Ceilometer instead of
