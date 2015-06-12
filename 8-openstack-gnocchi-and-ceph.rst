@@ -373,7 +373,7 @@ I run this workload with
 .. code-block:: shell
 
     mkdir result_swift
-    n=10 parallel --progress -j $n python ./tools/duration_perf_test.py --result result_swift/client{}.. code-block::  $(seq 0 $n)
+    n=10 parallel --progress -j $n python ./tools/duration_perf_test.py --result result_swift/client{}.. :::  $(seq 0 $n)
 
 
 And after on my ceph VM:
@@ -382,7 +382,7 @@ And after on my ceph VM:
 .. code-block:: shell
 
     mkdir result_ceph
-    n=10 parallel --progress -j $n python ./tools/duration_perf_test.py --result result_ceph/client{}.. code-block::  $(seq 0 $n)
+    n=10 parallel --progress -j $n python ./tools/duration_perf_test.py --result result_ceph/client{}.. :::  $(seq 0 $n)
 
 
 Take a looks of the result:
@@ -390,7 +390,7 @@ Take a looks of the result:
 
 .. code-block:: shell
 
-    python ./tools/duration_duration_perf_analyse.py result_swift
+    python ./tools/duration_perf_analyse.py result_swift
     * get_measures:
              Duration
     mean      0.03918
