@@ -4,14 +4,15 @@ SITEURL = "https://blog.sileht.net"
 AUTHOR = "Mehdi Abaakouk"
 TIMEZONE = "Europe/Paris"
 
-SOCIAL = (
+SOCIAL = [
+    ('sileht on IRC', ''),
+    ('email', 'mailto:sileht@sileht.net'),
     ('twitter', 'http://twitter.com/sileht'),
     ('github', 'http://github.com/sileht'),
+    ('keybase', 'https://keybase.io/sileht'),
     ('linkedin', 'http://fr.linkedin.com/pub/mehdi-abaakouk/24/9b0/27/'),
-    ('sileht on IRC', ''),
     ('launchpad', 'https://launchpad.net/~sileht'),
-    ('email', 'mailto:sileht@sileht.net'),
-)
+]
 
 # STYLE
 THEME = "/var/www/blog.sileht.net/pelican-twitchy"
