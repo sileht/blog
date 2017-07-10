@@ -20,13 +20,7 @@ THEME = "/var/www/blog.sileht.net/pelican-themes/alchemy/alchemy"
 
 HIDE_AUTHORS = True
 SUMMARY_MAX_LENGTH = 30
-RECENT_POST_COUNT = 10
-# BOOTSTRAP_THEME = "sandstone"
 PYGMENTS_STYLE = "tango"
-DISPLAY_RECENT_POSTS_ON_MENU = True
-DISPLAY_PAGES_ON_MENU = True
-DISPLAY_CATEGORIES_ON_MENU = False
-DISPLAY_TAGS_ON_MENU = True
 
 TYPOGRIFY = True
 MARKUP = ('rst', 'md', 'mkd')
