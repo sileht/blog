@@ -2,8 +2,7 @@
 
 BLOG_BASE="/var/www/blog.sileht.net/"
 
-[ "$1" == "prod" ] && shift && OPTS="-o /var/www/blog.sileht.net/output"
-OPTS="$OPTS $@"
+OPTS="$@"
 
 if [ "$USER" != "root" ]; then
     sudo -i "$BLOG_BASE/contents/$(basename $0)" $OPTS

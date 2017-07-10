@@ -44,7 +44,7 @@ STATIC_PATHS = ['images', 'static']
 
 # SETUP
 LOAD_CONTENT_CACHE = False
-OUTPUT_PATH = "/var/www/blog.sileht.net/output/dev"
+OUTPUT_PATH = "/var/www/blog.sileht.net/output"
 DELETE_OUTPUT_DIRECTORY = True
 
 GOOGLE_ANALYTICS_UNIVERSAL = "UA-4618550-4"
