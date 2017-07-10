@@ -40,6 +40,8 @@ BOOTSTRAPIFY = {
     'blockquote': ['blockquote'],
 }
 
+STATIC_PATHS = ['images', 'static']
+
 # SETUP
 LOAD_CONTENT_CACHE = False
 OUTPUT_PATH = "/var/www/blog.sileht.net/output/dev"

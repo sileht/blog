@@ -2,7 +2,7 @@
 :date: 2017-07-07 10:01
 :category: Gnocchi
 :tags: pastamaker, github, gnocchi
-:status: hidden
+:status: draft
 
 The story of pastamaker
 =======================
