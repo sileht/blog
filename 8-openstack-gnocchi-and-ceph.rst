@@ -429,16 +429,16 @@ Take a looks of the result:
 
 The tools also generates csv files that we can use to make some graphs:
 
-.. figure:: /images/7-swift-get.png
+.. figure:: /static/7-swift-get.png
    :alt: Swift - GET measurements
 
-.. figure:: /images/7-ceph-get.png
+.. figure:: /static/7-ceph-get.png
    :alt: Ceph - GET measurements
 
-.. figure:: /images/7-swift-post.png
+.. figure:: /static/7-swift-post.png
    :alt: Swift - GET measurements
 
-.. figure:: /images/7-ceph-post.png
+.. figure:: /static/7-ceph-post.png
    :alt: Ceph - GET measurements
 
 We don’t see a significant difference between swift and ceph here, but

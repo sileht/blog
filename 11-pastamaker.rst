@@ -2,6 +2,7 @@
 :date: 2017-07-07 10:01
 :category: Gnocchi
 :tags: pastamaker, github, gnocchi
+:status: hidden
 
 The story of pastamaker
 =======================
@@ -89,7 +90,7 @@ The dashbord
 It just displays the pull requests list of all registered projects with the
 weight of the Pull Requests. An example of the dashboard:
 
-.. figure:: /images/pastamaker-dashboard.png
+.. figure:: /static/pastamaker-dashboard.png
    :alt: Pastamaker dasbhoard
 
 Install your own

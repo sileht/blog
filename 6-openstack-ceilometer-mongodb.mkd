@@ -31,7 +31,7 @@ Openstack is installed on other servers, this focuses only on the mongo part.
 
 ## Architecture
 
-![Mongodb shrading/replicaset architecture](/images/mongo_bg.png)
+![Mongodb shrading/replicaset architecture](/static/mongo_bg.png)
 
 
 Some vocabulary (extracted from mongodb man pages):

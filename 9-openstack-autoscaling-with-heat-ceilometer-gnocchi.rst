@@ -303,5 +303,5 @@ And then point your browser to a resource URL on the port 8042 of your devstack:
 
 * cpu_util of the first instance: http://localhost:8042/v1/resource/instance/53b5f608-320c-4ead-82e2-bde0b500ebd8/metric/cpu_util/measures
 
-.. figure:: /images/9-cpu_util_example.png
+.. figure:: /static/9-cpu_util_example.png
    :alt: cpu_util example
