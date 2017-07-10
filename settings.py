@@ -1,5 +1,5 @@
 
-SITENAME = "Random thing I work on"
+SITENAME = "Random things I work on"
 SITESUBTITLE = "From Mehdi Abaakouk (sileht)"
 SITEIMAGE = "/images/logo.png"
 SITEURL = "https://blog.sileht.net"
