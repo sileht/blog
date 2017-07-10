@@ -7,18 +7,18 @@
 The story of pastamaker
 =======================
 
-`Gnocchi`_ project recently moved from the Openstack infrastructure to `Github`.
+`Gnocchi`_ project recently moved from the Openstack infrastructure to `Github`_.
 
 The Openstack infrastructure provides a very good set of tools for
-managing/reviewing/testing projects. To do so, they use `Gerrit`_ and `Zuul`.
+managing/reviewing/testing projects. To do so, they use `Gerrit`_ and `Zuul`_.
 `Zuul`, the gating system, ensures that we don't merge commit that doesn't pass
 tests.
 
-When we moved to `Github`, we obviously use the Pull Request system to replace
+When we moved to `Github`_, we obviously use the Pull Request system to replace
 `Gerrit`_ and use `Travis-CI`_ to run tests. But the workflow around Pull Request
 and `Travis-CI`_ is not as good as `Zuul`_ was.
 
-First, about `Travis-CI`, it tests only the head of the Pull Request branch
+First, about `Travis-CI`_, it tests only the head of the Pull Request branch
 whatever the base branch commit is. The base branch commit of a Pull Request is
 never the last commit of your base branch. At this point, if you click on the
 `Github`_ Merge Button you can't known if the result merge or rebase will pass
@@ -29,16 +29,16 @@ up to date before merging". But, each times a Pull Request is merged, all Pull
 Requests must be rebased... and nothing in `Github`_ allow to automate that.
 They just offer a manual "Update branch" button.
 
-On `Gnocchi`_ project after some weeks of using `Github`, all cores was passed
+On `Gnocchi`_ project after some weeks of using `Github`_, all cores was passed
 many times to talk about which PR we will merge next, one of them have to take
-care of it, click on "Update branch", then wait ~ 30~40 minutes for `Travis-CI`
-to post the new result and click on the Merge Button. So many times lost,
-especially when you come from Openstack Infrastructure and `Zuul`_ is doing all
-of that for you.
+care of it, click on "Update branch", then wait ~ 30~40 minutes for
+`Travis-CI`_ to post the new result and click on the Merge Button. So many
+times lost, especially when you come from Openstack Infrastructure and `Zuul`_
+is doing all of that for you.
 
 That why we end up to write a `Github`_ Bot to manage this administrative work
 for us. It uses new Github Apps API, the code is under "Apache License v2" and
-it's called `pastamaker`.
+it's called `pastamaker`_.
 
 How does it works
 =================
@@ -79,7 +79,7 @@ and Github API.
 The REST API
 ------------
 
-It passes the HTTP `Github`_ events to the engine through `Redis`, serves all the
+It passes the HTTP `Github`_ events to the engine through `Redis`_, serves all the
 static files for the Dashboard, allows to retrieve the queues built by the
 engine, or to subscribe a stream of the queues update. Also you can trigger the
 initial built of the queue of all registered projects.
@@ -96,9 +96,9 @@ weight of the Pull Requests. An example of the dashboard:
 Install your own
 ================
 
-`pastamaker`_ offers all helpers to be deployed on `Heroku`. For the `Gnocchi`
-project, we currently use only free service of `Travis-CI`, `Heroku`_ and `Github`_ and
-it works well for our load.
+`pastamaker`_ offers all helpers to be deployed on `Heroku`_. For the
+`Gnocchi`_ project, we currently use only free service of `Travis-CI`_,
+`Heroku`_ and `Github`_ and it works well for our load.
 
 The setup steps are basically:
 
