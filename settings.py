@@ -1,27 +1,30 @@
 
-SITENAME = "Sileht's Blog"
+SITENAME = "Random thing I work on"
+SITESUBTITLE = "From Mehdi Abaakouk (sileht)"
+SITEIMAGE = "/images/logo.png"
 SITEURL = "https://blog.sileht.net"
 AUTHOR = "Mehdi Abaakouk"
 TIMEZONE = "Europe/Paris"
 
-SOCIAL = [
-    ('sileht on IRC', ''),
-    ('email', 'mailto:sileht@sileht.net'),
+ICONS = [
     ('twitter', 'http://twitter.com/sileht'),
     ('github', 'http://github.com/sileht'),
-    ('keybase', 'https://keybase.io/sileht'),
     ('linkedin', 'http://fr.linkedin.com/pub/mehdi-abaakouk/24/9b0/27/'),
-    ('launchpad', 'https://launchpad.net/~sileht'),
+    ('envelope', 'mailto:sileht@sileht.net'),
+    ('key', 'https://keybase.io/sileht'),
 ]
 
 # STYLE
 THEME = "/var/www/blog.sileht.net/pelican-twitchy"
-SUMMARY_MAX_LENGTH = 150
+THEME = "/var/www/blog.sileht.net/pelican-themes/alchemy/alchemy"
+
+HIDE_AUTHORS = True
+SUMMARY_MAX_LENGTH = 30
 RECENT_POST_COUNT = 10
-BOOTSTRAP_THEME = "sandstone"
+# BOOTSTRAP_THEME = "sandstone"
 PYGMENTS_STYLE = "tango"
 DISPLAY_RECENT_POSTS_ON_MENU = True
-DISPLAY_PAGES_ON_MENU = False
+DISPLAY_PAGES_ON_MENU = True
 DISPLAY_CATEGORIES_ON_MENU = False
 DISPLAY_TAGS_ON_MENU = True
 
@@ -33,8 +36,15 @@ PLUGIN_PATHS = ['/var/www/blog.sileht.net/pelican-plugins']
 PLUGINS = [
     'better_code_samples',
     'better_figures_and_images',
+    'pelican-bootstrapify',
 ]
 RESPONSIVE_IMAGES = True  # better_figures_and_images
+
+BOOTSTRAPIFY = {
+    'table': ['table', 'table-striped', 'table-hover'],
+    'img': ['img-fluid'],
+    'blockquote': ['blockquote'],
+}
 
 # SETUP
 LOAD_CONTENT_CACHE = False
