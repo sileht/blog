@@ -1,8 +1,12 @@
 
 SITENAME = "Random things I work on"
 SITESUBTITLE = "From Mehdi Abaakouk (sileht)"
+
+SITENAME = "Mehdi Abaakouk (sileht)"
+SITESUBTITLE = "Random things I work on"
+
 SITEIMAGE = "/images/logo.png"
-SITEURL = "https://blog.sileht.net"
+SITEURL = "https://sileht.net"
 AUTHOR = "Mehdi Abaakouk"
 TIMEZONE = "Europe/Paris"
 
@@ -12,6 +16,9 @@ ICONS = [
     ('linkedin', 'http://fr.linkedin.com/pub/mehdi-abaakouk/24/9b0/27/'),
     ('envelope', 'mailto:sileht@sileht.net'),
     ('key', 'https://keybase.io/sileht'),
+]
+LINKS = [
+    ('/dev/log', '/blog.html'),
 ]
 
 # STYLE
@@ -41,6 +48,12 @@ BOOTSTRAPIFY = {
 }
 
 STATIC_PATHS = ['images', 'static']
+
+ARTICLE_URL = 'blog/{slug}.html'
+ARTICLE_SAVE_AS = 'blog/{slug}.html'
+PAGE_URL = '{slug}.html'
+PAGE_SAVE_AS = '{slug}.html'
+INDEX_SAVE_AS = 'blog.html'
 
 # SETUP
 LOAD_CONTENT_CACHE = False
