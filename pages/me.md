@@ -20,6 +20,8 @@ Here is a quick list of my contribution to the opensource world:
     plugin <sup>C</sup>
 -   [libvirt](https://libvirt.org) network interface statistics
     retrieval for openvswitch <sup>C</sup>
+-   [neomutt](https://github.com/neomutt/neomutt), a text based mail
+    client <sup>C</sup>
 -   Core developer of [Gnocchi](https://gnocchi.xyz), Metric as a
     Service: multi-tenant timeseries, metrics and resources database
     <sup>Python, Ceph, Redis, Postgresql, Mysql</sup>
@@ -48,8 +50,6 @@ Here is a quick list of my contribution to the opensource world:
     and
     [libcephfs](http://docs.ceph.com/docs/master/api/#ceph-filesystem-apis)
     Python binding in C with [Cython](http://cython.org) <sup>C, Cython</sup>
--   [neomutt](https://github.com/neomutt/neomutt), a text based mail
-    client <sup>C</sup>
 -   Official Red Hat Openstack Packaging <sup>.rpm Packaging</sup>
 -   [Official Debian Packaging](http://qa.debian.org/developer.php?login=sileht%40sileht.net)
     <sup>.deb packaging</sup>
@@ -82,8 +82,8 @@ Internet Service Provider and Host Provider:
 In this context, since 2010, I have set up and maintain:
 
 -   an [Openstack](http://www.openstack.org) cluster of 14 nodes using
-    [Kvm](http://www.linux-kvm.org) for the virtualisation (\~160
-    instances), [Ceph](http://ceph.com/) for the storage (\~100To), and
+    [Kvm](http://www.linux-kvm.org) for the virtualisation (~160
+    instances), [Ceph](http://ceph.com/) for the storage (~100To), and
     a [custom network
     plugins](https://chiliproject.tetaneutral.net/projects/git-tetaneutral-net/repository/neutron-linuxrouted-plugin)
     that uses iBGP mesh network to route public ips across the cluster
@@ -103,7 +103,7 @@ In this context, since 2010, I have set up and maintain:
     our [looking glass](http://lg.tetaneutral.net/)
 -   or
     [disc-air](https://chiliproject.tetaneutral.net/projects/git-tetaneutral-net/repository/disc-air)
-    to [map our network](https://tsf.tetaneutral.net/toulouse.html)
+    to [map our network](https://tsf.tetaneutral.net/)
 -   and everything automated with [Puppet](https://puppetlabs.com/)
     and/or [Ansible](https://ansible.com)
 -   and backuped with [Borg](http://borgbackup.readthedocs.org)
