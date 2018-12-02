@@ -18,7 +18,6 @@ ICONS = [
     ('key', 'https://keybase.io/sileht'),
 ]
 LINKS = [
-    ('/dev/log', '/blog.html'),
 ]
 
 # STYLE

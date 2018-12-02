@@ -58,17 +58,17 @@ Here is a quick list of my contribution to the opensource world:
 -   [Neutron routed-plugin](https://chiliproject.tetaneutral.net/projects/git-tetaneutral-net/repository/neutron-linuxrouted-plugin)
     Openstack plugin to provide L3 routing only <sup>Python</sup>
 -   [Bird-LG](https://github.com/sileht/bird-lg/) a BGP looking glass
-    for bird written in python/flask (started in 2011)
+    for bird written in python/flask
     <sup>Python/JQuery</sup>
 -   [Listen](https://launchpad.net/listen) a music player/manager for
     GNOME written in python/gtk/gstreamer (2005-2012)
     <sup>Python/GTK/Gstreamer</sup>
--   [Seeks](http://www.seeks-project.info) a social and collaborative
+-   [Seeks](https://github.com/beniz/seeks) a social and collaborative
     search engine , I make the debian and ubuntu packages (2009-2012)
     <sup>C++</sup>
--   [Lullaby](http://github.com/sileht/lullaby) a android client for
+-   [Lullaby](https://github.com/sileht/lullaby) a android client for
     [ampache](http://ampache.org/) (2010-2012) <sup>Java/Android</sup>
--   [CyanogenMod](http://www.cyanogenmod.com) a Android alternative OS
+-   [CyanogenMod/Lineageos](https://lineageos.org) a Android alternative OS
     for mobile, I have ported some CyanogenMod fonctionnalities from
     version 4 to 5, 6 and 7 (2009-2010)
     <sup>C/Linux kernel/Java/Android</sup>
@@ -82,7 +82,7 @@ Internet Service Provider and Host Provider:
 In this context, since 2010, I have set up and maintain:
 
 -   an [Openstack](http://www.openstack.org) cluster of 14 nodes using
-    [Kvm](http://www.linux-kvm.org) for the virtualisation (~160
+    [Kvm](http://www.linux-kvm.org) for the virtualisation (~180
     instances), [Ceph](http://ceph.com/) for the storage (~100To), and
     a [custom network
     plugins](https://chiliproject.tetaneutral.net/projects/git-tetaneutral-net/repository/neutron-linuxrouted-plugin)
