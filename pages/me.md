@@ -4,9 +4,9 @@ Slug: index
 I'm Mehdi Abaakouk, I live in Toulouse (France) and I have been using
 Linux for more than twenty years.
 
-My current job is **Senior Software Engineer** for [Red Hat 🎩](http://www.redhat.com).
+My current job is **Senior Software Engineer** for [Red Hat](http://www.redhat.com).
 
-I also co-founded and run [Mergify 🔀](https://mergify.io), a GitHub service around automation.
+I also co-founded and run [Mergify](https://mergify.io), a GitHub service around automation.
 
 My main interests in the computer science are the **opensource
 softwares** and how Internet works under the hood, and I **really** like
@@ -75,11 +75,11 @@ Here is a quick list of my contribution to the opensource world:
 -   [Gmixer](http://launchpad.net/gmixer) a audio mixer in
     python/gtk (2008) <sup>Python</sup>
 
-For the Internet part, I'm involving myself in a French Associative
+For the Internet part, I'm involved in a French Associative
 Internet Service Provider and Host Provider:
 [tetaneutral.net](http://www.tetaneutral.net)
 
-In this context, since 2010, I have set up and maintain:
+In this context, since 2010, I have set up and maintained:
 
 -   an [Openstack](http://www.openstack.org) cluster of 14 nodes using
     [Kvm](http://www.linux-kvm.org) for the virtualisation (~180
@@ -108,6 +108,6 @@ In this context, since 2010, I have set up and maintain:
     and/or [Ansible](https://ansible.com)
 -   and backuped with [Borg](http://borgbackup.readthedocs.org)
 
-I make the regular system administration tasks too.
+I'm taking charge if the regular system administration tasks too.
 
 And also I like to dance on crazy swing rhythm 😁
